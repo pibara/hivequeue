@@ -184,36 +184,42 @@ class RateLimit:
         """Invoke the wrapped function. If must be delayed to make sure rate limmits
         are not exceeded.
         """
-        # Loop untill call soon is called and loop_on set to False
-        loop_on = True
         # New call not yet returned, means we will be one extra behind when invoking
         self.behind += 1
-        while loop_on:
-            #If this is the first call, call directly, need a response with headers before
-            # rate limit can commence.
-            if not self.probed:
-                self.loop.call_soon(self.funct(*args, **kwargs))
-                loop_on = False
+        if not self.probed:
+            self.loop.call_soon(self.funct, *args, **kwargs)
+        else:
+            #Not the first call
+            if self.use_fallback:
+                # Use fallback if needed
+                self.headers(200, self.fakeserver(), fallback=True)
+            # If within the rules of the rate limiter, call soon.
+            if self.remaining is not None and self.remaining > self.polli_spare:
+                self.remaining -= 1
+                self.loop.call_soon(self.funct, *args, **kwargs)
             else:
-                #Not the first call
-                if self.use_fallback:
-                    # Use fallback if needed
-                    self.headers(200, self.fakeserver(), fallback=True)
-                # If within the rules of the rate limiter, call soon.
-                if self.remaining is not None and self.remaining > self.polli_spare:
-                    self.remaining -= 1
-                    self.loop.call_soon(self.funct(*args, **kwargs))
-                    loop_on = False
+                #If not, wait for the reset moment plus some extra.
+                waitfor = self.reset - time.time() + 0.01
+                if waitfor <= 0.0:
+                    # We can't rait a negative time.
+                    self.loop.call_soon(self.funct, *args, **kwargs)
                 else:
-                    #If not, wait for the reset moment plus some extra.
-                    waitfor = self.reset - time.time() + 0.01
-                    if waitfor <= 0.0:
-                        # We can't rait a negative time.
-                        self.loop.call_soon(self.funct(*args, **kwargs))
-                        loop_on = False
-                    else:
-                        # Wait the amount of time till the reset time.
-                        asyncio.sleep(waitfor)
+                    # Wait the amount of time till the reset time.
+                    self.loop.call_later(waitfor, self._retry, *args, **kwargs)
+
+    def _retry(self, *args, **kwargs):
+        if self.remaining is not None and self.remaining > self.polli_spare:
+            self.remaining -= 1
+            self.loop.call_soon(self.funct, *args, **kwargs)
+        else:
+            #If not, wait for the reset moment plus some extra.
+            waitfor = self.reset - time.time() + 0.01
+            if waitfor <= 0.0:
+                # We can't rait a negative time.
+                self.loop.call_soon(self.funct, *args, **kwargs)
+            else:
+                # Wait the amount of time till the reset time.
+                self.loop.call_later(waitfor, self._retry, *args, **kwargs)
 
     def headers(self, status, headers, fallback=False):
         """Process headers, either from the real server, or if that server doesn't
@@ -247,7 +253,7 @@ class RateLimit:
                     if not self.reset.isdigit():
                         self.reset = retry_to_seconds(self.reset)
                     else:
-                        self.reset += time.time()
+                        self.reset = float(self.reset) + time.time()
                 else:
                     self.reset = None
             if not self.probed:
@@ -257,6 +263,7 @@ class RateLimit:
                 else:
                     self.use_fallback = True
         if "Retry-After" in headers:
+            self.reset = headers["Retry-After"]
             self.reset = retry_to_seconds(self.reset)
             self.remaining = 0
             self.retry = True
@@ -271,7 +278,6 @@ class RateLimit:
                 self.reset = self.backoff() + time.time()
         if fallback and self.use_fallback and self.reset is None and \
            (self.remaining is None or self.remaining <= self.polli_spare):
-            logging.error('Missing rate limit headers from built-in policy generator.')
             self.reset = self.backoff() + time.time()
         elif (not fallback and
               not self.use_fallback and
