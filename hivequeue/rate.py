@@ -120,6 +120,7 @@ class BackOff:
         while rval <= 0.0:
             rval = np.random.normal(self.mean, self.sigma, 1)[0]
         logging.info("Backing off for  %f seconds", rval)
+        print("Backoff:", rval)
         return rval
 
 
