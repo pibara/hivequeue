@@ -143,7 +143,8 @@ class RateLimit:
                  polli_spare=0,
                  fallback_window=15,
                  fallback_count=150,
-                 back_off_mu=30
+                 back_off_mu=30,
+                 smoothen=False
                 ):
         # pylint: disable=R0913
         """Constructor:
@@ -180,6 +181,7 @@ class RateLimit:
         self.remaining = None
         self.reset = None
         self.retry = False
+        self.smoothen = smoothen  # Experimental, reduce burstyness.
 
     def __call__(self, *args, **kwargs):
         """Invoke the wrapped function. If must be delayed to make sure rate limmits
