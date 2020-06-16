@@ -167,6 +167,9 @@ class RateLimit:
         back_off_mu : int
                       On server errors, the mean number of seconds to back off. Note that
                       Gaussian randomness (sigma is mu/5) is added to avoid server restore overload.
+        smoothen : bool
+                   When false, go as fast as possible till the quota runs out, then wait will next window.
+                   When true, try to spead available window quota smoothly over the window time.
         """
         self.funct = funct
         self.loop = loop
@@ -198,8 +201,14 @@ class RateLimit:
                 self.headers(200, self.fakeserver(), fallback=True)
             # If within the rules of the rate limiter, call soon.
             if self.remaining is not None and self.remaining > self.polli_spare:
-                self.remaining -= 1
-                self.loop.call_soon(self.funct, *args, **kwargs)
+                now = time.time()
+                if self.smoothen and self.reset is not None and self.reset > now:
+                    waitfor = (self.reset  - time.time())/(self.remaining + 1)
+                    self.remaining -= 1
+                    self.loop.call_later(waitfor, self.func, *args, **kwargs)
+                else:
+                    self.remaining -= 1
+                    self.loop.call_soon(self.funct, *args, **kwargs)
             else:
                 #If not, wait for the reset moment plus some extra.
                 waitfor = self.reset - time.time() + 0.01
@@ -212,8 +221,13 @@ class RateLimit:
 
     def _retry(self, *args, **kwargs):
         if self.remaining is not None and self.remaining > self.polli_spare:
-            self.remaining -= 1
-            self.loop.call_soon(self.funct, *args, **kwargs)
+            if self.smoothen and self.reset is not None and self.reset > now:
+                    waitfor = (self.reset  - time.time())/(self.remaining + 1)
+                    self.remaining -= 1
+                    self.loop.call_later(waitfor, self.func, *args, **kwargs)
+            else:
+                self.remaining -= 1
+                self.loop.call_soon(self.funct, *args, **kwargs)
         else:
             #If not, wait for the reset moment plus some extra.
             waitfor = self.reset - time.time() + 0.01
