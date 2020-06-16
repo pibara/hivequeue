@@ -8,7 +8,7 @@ class Generator:
         self.count = 0
         self.remaining = burst
         loop = asyncio.get_running_loop()
-        self.ratelimit = hivequeue.RateLimit(self, loop, fallback_window=5, fallback_count=50)
+        self.ratelimit = hivequeue.RateLimit(self, loop, fallback_window=5, fallback_count=50, smoothen=True)
         self(0)
     def __call__(self, num):
         self.count += 1

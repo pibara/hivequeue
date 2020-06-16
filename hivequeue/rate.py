@@ -205,7 +205,7 @@ class RateLimit:
                 if self.smoothen and self.reset is not None and self.reset > now:
                     waitfor = (self.reset  - time.time())/(self.remaining + 1)
                     self.remaining -= 1
-                    self.loop.call_later(waitfor, self.func, *args, **kwargs)
+                    self.loop.call_later(waitfor, self.funct, *args, **kwargs)
                 else:
                     self.remaining -= 1
                     self.loop.call_soon(self.funct, *args, **kwargs)
@@ -224,7 +224,7 @@ class RateLimit:
             if self.smoothen and self.reset is not None and self.reset > now:
                     waitfor = (self.reset  - time.time())/(self.remaining + 1)
                     self.remaining -= 1
-                    self.loop.call_later(waitfor, self.func, *args, **kwargs)
+                    self.loop.call_later(waitfor, self.funct, *args, **kwargs)
             else:
                 self.remaining -= 1
                 self.loop.call_soon(self.funct, *args, **kwargs)
