@@ -85,7 +85,7 @@ class FakeServer:
                                   ", " + str(self.fallback_count) + \
                                   ";window=" + str(self.fallback_window)
         remaining = self.fallback_count - self.curwindow_count
-        if remaining < 0:
+        if remaining <= 0:
             rval["RateLimit-Remaining"] = "0"
             rval["Retry-After"] = str(self.curwindow_end - now)
         else:
@@ -268,7 +268,6 @@ class RateLimit:
             self.reset = retry_to_seconds(self.reset)
             self.remaining = 0
             self.retry = True
-        else:
             self.retry = False
         if status in [500, 502, 503, 504]:
             logging.info('Status: %d.', status)
