@@ -1,0 +1,15 @@
+{
+    "host": "hive.roelandp.nl",
+    "enabled": false,
+    "ssl": true,
+    "rate_limit" : {
+        "simulate": true,
+        "smoothen": true,
+        "window": 60,
+        "limit": 600
+    },
+    "batch": {
+        "enabled": true,
+        "max_batch": 20
+    }
+}
