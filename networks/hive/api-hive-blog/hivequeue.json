@@ -1,8 +1,7 @@
-{
+[{
     "host": "api.hive.blog",
     "protocol": "https",
     "enabled": true,
-    "port": 443,
     "rate_limit" : {
         "simulate": true,
         "smoothen": true,
@@ -12,10 +11,12 @@
     "batch": {
         "enabled": true,
         "max_batch": 20
-    }
+    },
     "api": {
 	"chain": "HIVE",
-        "version": "0.23.0"
+        "version": "0.23.0",
+	"apikey": {
+            "enabled": false
+	}
     }
-}
-
+}]

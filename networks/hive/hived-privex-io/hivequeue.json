@@ -1,7 +1,7 @@
-{
+[{
     "host": "hived.privex.io",
+    "protocol": "https",
     "enabled": false,
-    "ssl": true,
     "rate_limit" : {
         "simulate": true,
         "smoothen": true,
@@ -11,5 +11,12 @@
     "batch": {
         "enabled": true,
         "max_batch": 20
+    },
+    "api": {
+        "chain": "HIVE",
+        "version": "0.23.0",
+        "apikey": {
+            "enabled": false
+        }
     }
-}
+}]

@@ -1,0 +1,57 @@
+[{
+    "host": "demo.hive.timelord.ninja",
+    "protocol": "https",
+    "enabled": false,
+    "port": 6443,
+    "rate_limit" : {
+        "simulate": false,
+        "smoothen": true
+    },
+    "batch": {
+        "enabled": true,
+        "max_batch": 1
+    },
+    "api": {
+        "chain": "HIVE",
+        "version": "0.23.0",
+        "apikey": {
+            "enabled": true,
+            "optional": true,
+            "mode": "query_field",
+            "acquire": "hq_api_challenge",
+	    "batch": {
+                "enabled": true,
+                "max_batch": 50
+	    }
+        },
+	"sub_api": {
+          "include": ["condenser"]
+	}
+    }
+},{
+    "host": "demo.hive.timelord.ninja",
+    "protocol": "http",
+    "enabled": false,
+    "port": 6080,
+    "rate_limit" : {
+        "simulate": false,
+        "smoothen": true
+    },
+    "api": {
+        "chain": "HIVE",
+        "version": "0.23.0",
+        "apikey": {
+            "enabled": true,
+            "optional": false,
+            "mode": "query_field",
+            "acquire": "hq_api_challenge",
+            "batch": {
+                "enabled": true,
+                "max_batch": 50
+            }
+        },
+	"sub_api": {
+          "include": ["condenser"]
+        }
+    }
+}]
