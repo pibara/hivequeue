@@ -11,7 +11,7 @@ github repo and create an issue for a sumbodule link from this repo.
 A config file looks like this. 
 ```json
 [{
-    "host": "api.hive.blog",
+    "host": "rpc.blurt.world",
     "protocol": "https",
     "enabled": true,
     "rate_limit" : {
@@ -38,7 +38,7 @@ Or possibly like:
 
 ```json
 [{
-    "host": "demo.hive.timelord.ninja",
+    "host": "demo.blurt.timelord.ninja",
     "protocol": "https",
     "enabled": false,
     "port": 6443,
@@ -68,7 +68,7 @@ Or possibly like:
         }
     }
 },{
-    "host": "demo.hive.timelord.ninja",
+    "host": "demo.blurt.timelord.ninja",
     "protocol": "http",
     "enabled": false,
     "port": 6080,
